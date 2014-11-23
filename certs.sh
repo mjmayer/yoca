@@ -86,6 +86,14 @@ dir root_certs/certs/
 #------------------------------------------------------------------------------------------------------------------------
 do_intermediate_create(){
 ##create key
+info "checking for intermediate/openssl.cnf"
+if [ -f ./intermediate/openssl.cnf ];
+then
+   ok "using ./intermediate/openssl.cnf"
+else
+   err "./intermediate/openssl.cnf does NOT exist. Please create"
+fi
+#
 info "create intermediate key";
 echo -n "What root certificate to use: "
 read rootname
