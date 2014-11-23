@@ -148,7 +148,7 @@ openssl ca \
 
 chmod 444 $inter_cert
 ## verify certificate
-test = `grep "OK" openssl verify -CAfile $root_cert $inter_cert`
+test = openssl verify -CAfile $root_cert $inter_cert | grep -qi "OK" && echo "OK"
 if [ "$test" == "OK"  ]; then
   ok "your intermediate certificate was successfuly created"
 else
