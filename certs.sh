@@ -95,9 +95,9 @@ else
 fi
 #
 info "create intermediate key";
-echo -n "What root certificate to use: "
+echo -n "What root certificate to use (without ending): "
 read rootname
-echo -n "Please specify a name for your intermediate: "
+echo -n "Please specify a name for your intermediate (without ending): "
 read intername
 echo -n "Please specify the keysize: "
 read keysize
@@ -123,8 +123,8 @@ else
 fi
 # create request
 info "create a intermediate cert";
-echo -n "Which intermediate key to use: "
-read filename
+#echo -n "Which intermediate key to use: " #can't find where this variable is called
+#read filename
 
 openssl req -config intermediate/openssl.cnf \
     -sha256 -new -key $inter_key \
@@ -137,8 +137,8 @@ else
    err "certificate does NOT exists"
 fi
 # sign intermediate request with root cert
-echo -n "Which root key to use: "
-read root_key
+#echo -n "Which root key to use: "
+#read root_key  # i think this may be unecessary
 openssl ca \
     -keyfile $root_key \
     -cert $root_cert \
@@ -228,6 +228,7 @@ do
 mkdir $d
 cd $d
 mkdir certs
+mkdir newcerts
 mkdir private_keys
 chmod 700 private_keys
 mkdir public_keys
