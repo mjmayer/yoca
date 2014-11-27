@@ -218,8 +218,6 @@ do_root_remove(){
 info "remove root cert";
 }
 
-
-
 do_setup(){
 info "create directories";
 for d in root_certs intermediate_certs client_certs
@@ -275,6 +273,22 @@ intermediate)
   ;;
   remove)
   do_intermediate_remove
+  ;;
+  esac
+;;
+client)
+  case "$3" in
+  create)
+  do_client_create
+  ;;
+  list)
+  do_client_list
+  ;;
+  remove)
+  do_client_remove
+  ;;
+  test)
+  echo "test"
   ;;
   esac
 ;;
