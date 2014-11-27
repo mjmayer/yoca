@@ -1,3 +1,6 @@
+#variables
+openssl_cnf=/home/mjmayer/openssl.cnf
+
 
 #------------------------------------------------------------------------------------------------------------------------
 #======================================= COLORS =========================================================================
@@ -60,7 +63,7 @@ info "create a root cert";
 echo -n "Day to expire: "
 read expire_in
 
-openssl req -new -x509 -days $expire_in -key $root_key -sha256 -extensions v3_ca -out $root_cert
+openssl req -config $openssl_cnf -new -x509 -days $expire_in -key $root_key -sha256 -extensions v3_ca -out $root_cert
 info "check if certificate ${Blu}$certfilename${RCol} exists"
 if [ -f $root_cert ];
 then
@@ -140,6 +143,7 @@ fi
 #echo -n "Which root key to use: "
 #read root_key  # i think this may be unecessary
 openssl ca \
+    -config $openssl_cnf \
     -keyfile $root_key \
     -cert $root_cert \
     -extensions v3_ca -notext -md sha256 \
@@ -179,7 +183,7 @@ rm -f intermediate_certs/certs/$name-chain.cert.pem
 do_client_create(){
 ##create key
 info "create client key";
-echo -n "What intermediate certificate to use: "
+echo -n "What intermediate certificate to use: (without ending): "
 read intername
 echo -n "Please specify a name for your client certificate (www.example.com): "
 read clientname
@@ -189,25 +193,25 @@ if ! [[ $keysize =~ $int_regex ]] ; then
   err "Your keysize is not a number"
 fi
 
-inter_key = client_certs/private_keys/$intername.key.pem
-inter_cert = client_certs/certs/$intername.cert.pem
+inter_key=intermediate_certs/private_keys/$intername.key.pem
+inter_cert=intermediate_certs/certs/$intername.cert.pem
 
-client_key = client_certs/private_keys/$clientname.key.pem
-client_request = client_certs/certs/$clientname.csr.pem
-client_cert = client_certs/certs/$clientname.cert.pem
+client_key=client_certs/private_keys/$clientname.key.pem
+client_request=client_certs/certs/$clientname.csr.pem
+client_cert=client_certs/certs/$clientname.cert.pem
 
-openssl genrsa -out client_key $keysize
-chmod 400 client_key
+openssl genrsa -out $client_key $keysize
+chmod 400 $client_key
 ## create request
 info "Make sure that the Organization Name you choose below matches the one set for your CA root "
-openssl req -sha256 -new -client_key -out client_request
+openssl req -config intermediate/openssl.cnf -sha256 -new -key $client_key -out $client_request
 ## sign
-openssl ca -keyfile inter_key  -cert inter_cert \
+openssl ca -config intermediate/openssl.cnf -keyfile $inter_key  -cert $inter_cert \
     -extensions usr_cert -notext -md sha256 \
-    -in client_request -out client_cert
-chmod 444 client_cert
+    -in $client_request -out $client_cert
+chmod 444 $client_cert
 ## verify
-openssl x509 -in client_cert -noout -text
+openssl x509 -in $client_cert -noout -text
 ## create chainfile
 }
 
@@ -275,6 +279,19 @@ intermediate)
   ;;
   remove)
   do_intermediate_remove
+  ;;
+  esac
+;;
+client)
+  case "$2" in
+  create)
+  do_client_create
+  ;;
+  list)
+  do_client_list
+  ;;
+  remove)
+  do_client_remove
   ;;
   esac
 ;;
